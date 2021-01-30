@@ -32,7 +32,7 @@ func runCLI(args []string) error {
 	}
 
 	app.Commands = []*cli.Command{}
-	app.Commands = append(app.Commands, subcommands.ComputeVersionSubcommand())
+	app.Commands = append(app.Commands, subcommands.SetupSubcommand())
 	app.Before = initLogging
 	err := app.Run(args)
 	return err

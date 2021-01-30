@@ -1,27 +1,32 @@
 package subcommands
 
 import (
+	"bytes"
 	"fmt"
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 	"os"
 	"terminal-session-manager/src/internal/helpers"
+	"terminal-session-manager/src/internal/resources"
+	"text/template"
 	"time"
 )
 
-
-type ContextFlags struct {
-	commitTimestamp string
-	commitSha string
-	fromGitlabCi bool
+type Profiles struct {
+	Profiles []Profile
 }
 
-func ComputeVersionSubcommand() *cli.Command {
+type Profile struct {
+	Title string `yaml:"title"`
+	GitConfigLocation string `yaml:"gitConfigLocation"`
+}
+
+func SetupSubcommand() *cli.Command {
 
 	setupSubcommand := &cli.Command{
-			Name:   "setup",
-			Usage:  setupSubcommandUsage(),
-			Action: setupSubcommandAction(),
+		Name:   "setup",
+		Usage:  setupSubcommandUsage(),
+		Action: setupSubcommandAction(),
 	}
 	return setupSubcommand
 }
@@ -45,10 +50,23 @@ func initLocalRepositoryFile() error {
 	if err := ensureRepositoryDirExists(repositoryDirName); err != nil {
 		return err
 	}
-	if err := initLocalRepositoryFileGivenPath(localRepositoryPath); err != nil{
-		return err
-	}
+	//if err := initLocalRepositoryFileGivenPath(localRepositoryPath); err != nil{
+	//	return err
+	//}
+
+
+	generateConfigFile(localRepositoryPath, resources.ReadConfigTmpl)
+
 	return nil
+}
+
+func generateConfigFile(configPath string, contentProvider func() []byte, ) error {
+	var profilesStruct Profiles
+	t, _ := template.New("config").Parse(string(contentProvider()))
+
+	var tmpl bytes.Buffer
+	_ = t.Execute(&tmpl, profilesStruct)
+	return helpers.WriteToFile(configPath, tmpl.Bytes(), []int{os.O_CREATE, os.O_EXCL, os.O_WRONLY})
 }
 
 func initLocalRepositoryFileGivenPath(localRepositoryPath string) error {

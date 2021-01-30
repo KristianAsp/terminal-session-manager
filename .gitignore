@@ -2,3 +2,4 @@
 termsesh
 go_build_*
 artifacts/
+generated/
