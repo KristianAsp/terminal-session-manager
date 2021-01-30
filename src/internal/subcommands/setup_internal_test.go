@@ -1,7 +1,10 @@
 package subcommands
 
 import (
+	"bytes"
 	"fmt"
+	"github.com/stretchr/testify/assert"
+	"io/ioutil"
 	"os"
 	"testing"
 	"time"
@@ -10,18 +13,12 @@ import (
 func TestGenerateRepositoryConfigFile(t *testing.T) {
 	repositoryDirPath := fmt.Sprintf("%s/.termsesh", os.TempDir())
 	repositoryFilePath := fmt.Sprintf("%s/%s", repositoryDirPath, "config")
-	if errDir := os.MkdirAll(repositoryDirPath, os.ModePerm); errDir != nil {
-		t.Error(errDir)
-	}
 
-	if err := initLocalRepositoryFileGivenPath(repositoryFilePath); err != nil {
-		t.Error(err)
-	}
+	assert.NoError(t, os.MkdirAll(repositoryDirPath, os.ModePerm))
+	assert.NoError(t, initLocalRepositoryFileGivenPath(repositoryFilePath))
 
 	_, err := os.Stat(repositoryFilePath)
-	if os.IsNotExist(err) {
-		t.Error(fmt.Sprintf("No config file found in %s", repositoryDirPath))
-	}
+	assert.False(t, os.IsNotExist(err))
 
 	t.Cleanup(func() { os.RemoveAll(repositoryDirPath) })
 }
@@ -29,9 +26,7 @@ func TestGenerateRepositoryConfigFile(t *testing.T) {
 func TestGenerateEmptyRepositoryDir(t *testing.T) {
 	repositoryDirPath := fmt.Sprintf("%s/.termsesh", os.TempDir())
 
-	if err := ensureRepositoryDirExists(repositoryDirPath); err != nil {
-		t.Error(err)
-	}
+	assert.NoError(t, ensureRepositoryDirExists(repositoryDirPath))
 
 	t.Cleanup(func() { os.RemoveAll(repositoryDirPath) })
 }
@@ -39,20 +34,34 @@ func TestGenerateEmptyRepositoryDir(t *testing.T) {
 func TestBackupExistingConfigDir(t *testing.T) {
 	repositoryDirPath := fmt.Sprintf("%s/.termsesh", os.TempDir())
 	backupDirPath := fmt.Sprintf("%s.backup.%s", repositoryDirPath, time.Now().Format("02012006151605"))
-	if errDir := os.MkdirAll(repositoryDirPath, os.ModePerm); errDir != nil {
-		t.Error(errDir)
-	}
 
-	if err := backupExistingConfigIfExists(repositoryDirPath, backupDirPath); err != nil {
-		t.Error(err)
-	}
-
+	assert.NoError(t, os.MkdirAll(repositoryDirPath, os.ModePerm))
+	assert.NoError(t, backupExistingConfigIfExists(repositoryDirPath, backupDirPath))
 	_, err := os.Stat(backupDirPath)
-	if os.IsNotExist(err) {
-		t.Error(fmt.Sprintf("No backup discovered at %s", backupDirPath))
-	}
+	assert.False(t, os.IsNotExist(err))
+
 	t.Cleanup(func(){
 		os.RemoveAll(repositoryDirPath)
 		os.RemoveAll(backupDirPath)
 	})
+}
+
+func TestConfigFileIsCreatedFromTemplateWhenItDoesNotExist(t *testing.T) {
+	projectPath := setupProject()
+	configFilePath := projectPath + "/config"
+	templateContent := bytes.NewBufferString("some content").Bytes()
+	err := generateConfigFile(configFilePath, func() []byte { return templateContent })
+	generatedFile, _ := ioutil.ReadFile(configFilePath)
+
+	assert.Nil(t, err)
+	assert.FileExists(t, configFilePath)
+	assert.Equal(t, templateContent, generatedFile)
+
+	t.Cleanup(func() { os.RemoveAll(projectPath) })
+}
+
+func setupProject() string {
+	projectPath := fmt.Sprint(os.TempDir(), "/test")
+	os.MkdirAll(projectPath, os.ModePerm)
+	return projectPath
 }

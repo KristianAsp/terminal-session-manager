@@ -50,10 +50,9 @@ func initLocalRepositoryFile() error {
 	if err := ensureRepositoryDirExists(repositoryDirName); err != nil {
 		return err
 	}
-	//if err := initLocalRepositoryFileGivenPath(localRepositoryPath); err != nil{
-	//	return err
-	//}
-
+	if err := initLocalRepositoryFileGivenPath(localRepositoryPath); err != nil{
+		return err
+	}
 
 	generateConfigFile(localRepositoryPath, resources.ReadConfigTmpl)
 
