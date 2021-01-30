@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"os"
 	"testing"
-	"time"
 )
 
 func TestGenerateRepositoryConfigFile(t *testing.T) {
@@ -33,10 +32,11 @@ func TestGenerateEmptyRepositoryDir(t *testing.T) {
 
 func TestBackupExistingConfigDir(t *testing.T) {
 	repositoryDirPath := fmt.Sprintf("%s/.termsesh", os.TempDir())
-	backupDirPath := fmt.Sprintf("%s.backup.%s", repositoryDirPath, time.Now().Format("02012006151605"))
+	backupSuffix := func() string { return "test"}
+	backupDirPath := fmt.Sprintf("%s-%s", repositoryDirPath, backupSuffix())
 
 	assert.NoError(t, os.MkdirAll(repositoryDirPath, os.ModePerm))
-	assert.NoError(t, backupExistingConfigIfExists(repositoryDirPath, backupDirPath))
+	assert.NoError(t, backupExistingConfigIfExists(repositoryDirPath, backupSuffix))
 	_, err := os.Stat(backupDirPath)
 	assert.False(t, os.IsNotExist(err))
 

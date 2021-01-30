@@ -33,23 +33,23 @@ func SetupSubcommand() *cli.Command {
 
 func setupSubcommandAction() cli.ActionFunc {
 	return func(c *cli.Context) error {
-		return initLocalRepositoryFile()
+		return setupTermseshForUse()
 	}
 }
 
-func initLocalRepositoryFile() error {
+func setupTermseshForUse() error {
 	repositoryFileName := "config"
 	repositoryDirName := fmt.Sprintf("%s/.termsesh", os.Getenv("HOME"))
-	backupDirNameWithTimestamp := fmt.Sprintf("%s.backup-%s", repositoryDirName, time.Now().Format("02012006151605"))
 	localRepositoryPath := fmt.Sprintf("%s/%s", repositoryDirName, repositoryFileName)
 
-	if err := backupExistingConfigIfExists(repositoryDirName, backupDirNameWithTimestamp); err != nil {
+	if err := backupExistingConfigIfExists(repositoryDirName, func() string { return time.Now().Format("02012006151605")}); err != nil {
 		return err
 	}
 
 	if err := ensureRepositoryDirExists(repositoryDirName); err != nil {
 		return err
 	}
+
 	if err := initLocalRepositoryFileGivenPath(localRepositoryPath); err != nil{
 		return err
 	}
@@ -59,10 +59,9 @@ func initLocalRepositoryFile() error {
 	return nil
 }
 
-func generateConfigFile(configPath string, contentProvider func() []byte, ) error {
+func generateConfigFile(configPath string, contentProvider func() []byte) error {
 	var profilesStruct Profiles
 	t, _ := template.New("config").Parse(string(contentProvider()))
-
 	var tmpl bytes.Buffer
 	_ = t.Execute(&tmpl, profilesStruct)
 	return helpers.WriteToFile(configPath, tmpl.Bytes(), []int{os.O_CREATE, os.O_EXCL, os.O_WRONLY})
@@ -80,10 +79,11 @@ func ensureRepositoryDirExists(localRepositoryDirPath string) error {
 	return nil
 }
 
-func backupExistingConfigIfExists(localRepositoryDirPath string, backupDirPath string) error {
+func backupExistingConfigIfExists(localRepositoryDirPath string, backupSuffixFunc func() string) error {
 	if helpers.FileOrDirExists(localRepositoryDirPath) {
-		log.Debug("Discovered existing configuration at " + localRepositoryDirPath + ". Creating backup before proceeding...")
-		if err := os.Rename(localRepositoryDirPath, backupDirPath); err != nil {
+		backupPath := fmt.Sprintf("%s-%s", localRepositoryDirPath, backupSuffixFunc())
+		log.Debug(fmt.Sprintf("Discovered existing configuration at " + localRepositoryDirPath + ". Creating backup at %s before proceeding..."), backupPath)
+		if err := os.Rename(localRepositoryDirPath, backupPath); err != nil {
 			return err
 		}
 	}
