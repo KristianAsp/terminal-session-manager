@@ -1,8 +1,9 @@
 package main
 
 import (
+	log "github.com/sirupsen/logrus"
+	easy "github.com/t-tomalak/logrus-easy-formatter"
 	"github.com/urfave/cli/v2"
-	"log"
 	"os"
 	"terminal-session-manager/src/internal/subcommands"
 )
@@ -21,12 +22,34 @@ func runCLI(args []string) error {
 	app := &cli.App{
 		Name: "Termsesh",
 		Version: Version,
+		Flags:  []cli.Flag{
+			&cli.BoolFlag{
+				Name: "debug",
+				Aliases: []string{"d"},
+				Usage: "to enable debug logging",
+			},
+		},
 	}
 
 	app.Commands = []*cli.Command{}
 	app.Commands = append(app.Commands, subcommands.ComputeVersionSubcommand())
+	app.Before = initLogging
 	err := app.Run(args)
 	return err
 }
 
+func initLogging(c *cli.Context) error {
+	var logLevel log.Level
+	logLevel = log.InfoLevel
+	if c.Bool("debug") {
+		logLevel = log.DebugLevel
+	}
 
+	log.SetOutput(os.Stdout)
+	log.SetLevel(logLevel)
+	log.SetFormatter(&easy.Formatter{
+		LogFormat:       "%lvl% - %msg%\n",
+	})
+
+	return nil
+}

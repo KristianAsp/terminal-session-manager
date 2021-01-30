@@ -2,6 +2,7 @@ package subcommands
 
 import (
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 	"os"
 	"terminal-session-manager/src/internal/helpers"
@@ -64,8 +65,9 @@ func ensureRepositoryDirExists(localRepositoryDirPath string) error {
 
 func backupExistingConfigIfExists(localRepositoryDirPath string, backupDirPath string) error {
 	if helpers.FileOrDirExists(localRepositoryDirPath) {
+		log.Debug("Discovered existing configuration at " + localRepositoryDirPath + ". Creating backup before proceeding...")
 		if err := os.Rename(localRepositoryDirPath, backupDirPath); err != nil {
-			return nil
+			return err
 		}
 	}
 	return nil
