@@ -21,6 +21,7 @@ func main() {
 func runCLI(args []string) error {
 	app := &cli.App{
 		Name: "Termsesh",
+		Description: "Manage your SSH/GIT config between work and private setups",
 		Version: Version,
 		Flags:  []cli.Flag{
 			&cli.BoolFlag{
@@ -33,6 +34,7 @@ func runCLI(args []string) error {
 
 	app.Commands = []*cli.Command{}
 	app.Commands = append(app.Commands, subcommands.SetupSubcommand())
+	app.Commands = append(app.Commands, subcommands.AddSubcommand())
 	app.Before = initLogging
 	err := app.Run(args)
 	return err
