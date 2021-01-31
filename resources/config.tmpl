@@ -1,4 +1,5 @@
-{{ range .Profiles }}
-{{ .Title }}:
-  gitConfigLocation: {{ .GitConfigLocation}}
+{{ range $key, $value := . }}
+{{ $value.ProfileName }}:
+  profile_name: {{ $value.ProfileName }}
+  gitConfigLocation: {{ $value.GitConfigLocation }}
 {{ end }}

@@ -2,7 +2,7 @@ SHELL:=/bin/bash
 
 all: clean build test
 
-GOPATH = ${HOME}go
+GOPATH = ${HOME}/go
 
 build:
 	go install github.com/go-bindata/go-bindata/...

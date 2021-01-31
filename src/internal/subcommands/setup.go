@@ -1,25 +1,15 @@
 package subcommands
 
 import (
-	"bytes"
 	"fmt"
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
 	"os"
+	"terminal-session-manager/src/internal/config"
 	"terminal-session-manager/src/internal/helpers"
 	"terminal-session-manager/src/internal/resources"
-	"text/template"
 	"time"
 )
-
-type Profiles struct {
-	Profiles []Profile
-}
-
-type Profile struct {
-	Title string `yaml:"title"`
-	GitConfigLocation string `yaml:"gitConfigLocation"`
-}
 
 func SetupSubcommand() *cli.Command {
 
@@ -35,6 +25,10 @@ func setupSubcommandAction() cli.ActionFunc {
 	return func(c *cli.Context) error {
 		return setupTermseshForUse()
 	}
+}
+
+func setupSubcommandUsage() string {
+	return "setup new config and initial profiles for the terminal session manager"
 }
 
 func setupTermseshForUse() error {
@@ -54,26 +48,20 @@ func setupTermseshForUse() error {
 		return err
 	}
 
-	generateConfigFile(localRepositoryPath, resources.ReadConfigTmpl)
-
-	return nil
+	return config.GenerateConfigFile(localRepositoryPath, resources.ReadConfigTmpl, nil)
 }
 
-func generateConfigFile(configPath string, contentProvider func() []byte) error {
-	var profilesStruct Profiles
-	t, _ := template.New("config").Parse(string(contentProvider()))
-	var tmpl bytes.Buffer
-	_ = t.Execute(&tmpl, profilesStruct)
-	return helpers.WriteToFile(configPath, tmpl.Bytes(), []int{os.O_CREATE, os.O_EXCL, os.O_WRONLY})
-}
+
 
 func initLocalRepositoryFileGivenPath(localRepositoryPath string) error {
+	log.Debug(fmt.Sprintf("Generating empty configiration file at %s"), localRepositoryPath)
 	err := helpers.GenerateEmptyFile(localRepositoryPath)
 	return err
 }
 
 func ensureRepositoryDirExists(localRepositoryDirPath string) error {
 	if !helpers.FileOrDirExists(localRepositoryDirPath) {
+		log.Debug(fmt.Sprintf("Generating empty repository directory at %s"), localRepositoryDirPath)
 		return helpers.GenerateEmptyDir(localRepositoryDirPath)
 	}
 	return nil
@@ -88,8 +76,4 @@ func backupExistingConfigIfExists(localRepositoryDirPath string, backupSuffixFun
 		}
 	}
 	return nil
-}
-
-func setupSubcommandUsage() string {
-	return "setup profiles for use with the terminal session manager (work, private etc..)"
 }

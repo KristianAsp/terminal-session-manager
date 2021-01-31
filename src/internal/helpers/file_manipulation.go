@@ -25,9 +25,7 @@ func WriteToFile(filePath string, bytes []byte, writeOptions []int) error {
 		return err
 	}
 
-	writeToFileGivenFileObject(file, bytes)
-
-	return nil
+	return writeToFileGivenFileObject(file, bytes)
 }
 
 func GenerateEmptyFile(filePath string) error {
