@@ -1,0 +1,5 @@
+{{ range $key, $value := . }}
+{{ $value.ProfileName }}:
+  profile_name: {{ $value.ProfileName }}
+  gitConfigLocation: {{ $value.GitConfigLocation }}
+{{ end }}
