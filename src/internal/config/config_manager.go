@@ -16,7 +16,7 @@ type Profile struct {
 	GitConfigLocation string `yaml:"gitConfigLocation"`
 }
 
-func readExistingConfigIntoMap(configPath string) map[string]Profile {
+func ReadExistingConfigIntoMap(configPath string) map[string]Profile {
 	profiles := make(map[string]Profile)
 	yamlFile, err := ioutil.ReadFile(configPath)
 	if err != nil {
@@ -29,8 +29,14 @@ func readExistingConfigIntoMap(configPath string) map[string]Profile {
 
 	return profiles
 }
-func addProfileToConfigMap(configMap map[string]Profile, profile Profile) map[string]Profile {
-	configMap[profile.ProfileName] = profile
+func AddProfileToConfigMap(configMap map[string]Profile) map[string]Profile {
+	profile_name := helpers.TakeInputFromUser("Profile name: ")
+
+	configMap[profile_name] = Profile{
+		ProfileName: profile_name,
+		GitConfigLocation: helpers.TakeInputFromUser("Git Config Location (or leave blank to omit): "),
+	}
+
 	return configMap
 }
 
@@ -39,5 +45,17 @@ func GenerateConfigFile(configPath string, templateProvider func() []byte, profi
 	t, _ := template.New("config").Parse(string(templateProvider()))
 	var tmpl bytes.Buffer
 	_ = t.Execute(&tmpl, profiles)
-	return helpers.WriteToFile(configPath, tmpl.Bytes(), []int{os.O_CREATE, os.O_APPEND, os.O_EXCL, os.O_WRONLY})
+	return helpers.WriteToFile(configPath, tmpl.Bytes(), []int{os.O_CREATE, os.O_APPEND, os.O_WRONLY})
+}
+
+func SetupInitialProfiles() map[string]Profile {
+	profiles := make(map[string]Profile)
+	for ok := true; ok; {
+		profiles = AddProfileToConfigMap(profiles)
+		res := helpers.TakeInputFromUser("Add Another Profile? (y/n): ")
+		ok = res=="y"
+	}
+
+
+	return profiles
 }

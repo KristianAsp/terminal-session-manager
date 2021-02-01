@@ -1,7 +1,11 @@
 package subcommands
 
 import (
+	"fmt"
 	"github.com/urfave/cli/v2"
+	"os"
+	"terminal-session-manager/src/internal/config"
+	"terminal-session-manager/src/internal/resources"
 )
 
 func AddSubcommand() *cli.Command {
@@ -22,6 +26,9 @@ func AddSubcommand() *cli.Command {
 
 func addSubcommandAction() cli.ActionFunc {
 	return func(c *cli.Context) error {
+		list := config.ReadExistingConfigIntoMap(fmt.Sprintf("%s/.termsesh/config", os.Getenv("HOME")))
+		list = config.AddProfileToConfigMap(list)
+		config.GenerateConfigFile(fmt.Sprintf("%s/.termsesh/config", os.Getenv("HOME")), resources.ReadConfigTmpl, list)
 		return nil
 	}
 }
