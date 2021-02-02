@@ -29,12 +29,13 @@ func ReadExistingConfigIntoMap(configPath string) map[string]Profile {
 
 	return profiles
 }
-func AddProfileToConfigMap(configMap map[string]Profile) map[string]Profile {
-	profile_name := helpers.TakeInputFromUser("Profile name: ")
 
+func AddProfileToConfigMap(configMap map[string]Profile, inputProvider func(input string) string) map[string]Profile {
+
+	profile_name := inputProvider("Profile name: ")
 	configMap[profile_name] = Profile{
 		ProfileName: profile_name,
-		GitConfigLocation: helpers.TakeInputFromUser("Git Config Location (or leave blank to omit): "),
+		GitConfigLocation: inputProvider("Git Config Location (or leave blank to omit): "),
 	}
 
 	return configMap
@@ -51,7 +52,7 @@ func GenerateConfigFile(configPath string, templateProvider func() []byte, profi
 func SetupInitialProfiles() map[string]Profile {
 	profiles := make(map[string]Profile)
 	for ok := true; ok; {
-		profiles = AddProfileToConfigMap(profiles)
+		profiles = AddProfileToConfigMap(profiles, helpers.TakeInputFromUser)
 		res := helpers.TakeInputFromUser("Add Another Profile? (y/n): ")
 		ok = res=="y"
 	}

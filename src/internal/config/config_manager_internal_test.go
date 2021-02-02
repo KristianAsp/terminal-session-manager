@@ -12,13 +12,31 @@ import (
 func TestAddNewProfileToEmptyConfig(t *testing.T) {
 	configMap := make(map[string]Profile)
 	profile := Profile{
-		ProfileName: "Test Name",
-		GitConfigLocation: "SomePath/Goes/Here",
+		ProfileName: "Test",
+		GitConfigLocation: "Test",
 	}
 
-	result := addProfileToConfigMap(configMap, profile)
-	assert.Equal(t, profile, result[profile.ProfileName])
+	result := AddProfileToConfigMap(configMap, func(input string) string { return "Test" })
+	assert.EqualValues(t, profile, result["Test"])
 }
+
+func TestAddNewProfileToExistingConfig(t *testing.T) {
+	configMap := make(map[string]Profile)
+	configMap["Test2"] = Profile{
+		ProfileName: "Test2",
+		GitConfigLocation: "Test2",
+	}
+
+	expectedProfileValues := Profile{
+		ProfileName: "Test",
+		GitConfigLocation: "Test",
+	}
+
+	result := AddProfileToConfigMap(configMap, func(input string) string { return "Test" })
+	assert.EqualValues(t, expectedProfileValues, result["Test"])
+}
+
+
 
 func TestConfigFileIsCreatedFromTemplateWhenItDoesNotExist(t *testing.T) {
 	projectPath := setupProject()
