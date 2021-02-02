@@ -1,10 +1,8 @@
 package subcommands
 
 import (
-	"bytes"
 	"fmt"
 	"github.com/stretchr/testify/assert"
-	"io/ioutil"
 	"os"
 	"testing"
 )
