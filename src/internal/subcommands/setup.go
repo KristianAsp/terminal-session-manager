@@ -54,14 +54,14 @@ func setupTermseshForUse() error {
 
 
 func initLocalRepositoryFileGivenPath(localRepositoryPath string) error {
-	log.Debug(fmt.Sprintf("Generating empty configiration file at %s"), localRepositoryPath)
+	log.Debug(fmt.Sprintf("Generating empty configiration file at %s", localRepositoryPath))
 	err := helpers.GenerateEmptyFile(localRepositoryPath)
 	return err
 }
 
 func ensureRepositoryDirExists(localRepositoryDirPath string) error {
 	if !helpers.FileOrDirExists(localRepositoryDirPath) {
-		log.Debug(fmt.Sprintf("Generating empty repository directory at %s"), localRepositoryDirPath)
+		log.Debug(fmt.Sprintf("Generating empty repository directory at %s", localRepositoryDirPath))
 		return helpers.GenerateEmptyDir(localRepositoryDirPath)
 	}
 	return nil

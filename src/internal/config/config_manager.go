@@ -16,8 +16,12 @@ type Profile struct {
 	GitConfigLocation string `yaml:"gitConfigLocation"`
 }
 
-func ReadExistingConfigIntoMap(configPath string) map[string]Profile {
+func ReadExistingConfigIntoMapFromYaml(configPath string) map[string]Profile {
 	profiles := make(map[string]Profile)
+	return ParseYamlIntoStruct(configPath, profiles)
+}
+
+func ParseYamlIntoStruct(configPath string, profiles map[string]Profile) map[string]Profile{
 	yamlFile, err := ioutil.ReadFile(configPath)
 	if err != nil {
 		log.Fatal(err)
@@ -26,7 +30,6 @@ func ReadExistingConfigIntoMap(configPath string) map[string]Profile {
 	if err := yaml.Unmarshal(yamlFile, &profiles); err != nil {
 		log.Fatal(err)
 	}
-
 	return profiles
 }
 
