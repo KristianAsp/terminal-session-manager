@@ -37,6 +37,7 @@ func runCLI(args []string) error {
 	app.Commands = append(app.Commands, subcommands.AddSubcommand())
 	app.Commands = append(app.Commands, subcommands.ListSubcommand())
 	app.Commands = append(app.Commands, subcommands.DescribeSubcommand())
+	app.Commands = append(app.Commands, subcommands.LoadProfileSubcommand())
 	app.Before = initLogging
 	err := app.Run(args)
 	return err

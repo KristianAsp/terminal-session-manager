@@ -2,6 +2,7 @@ package config
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
@@ -60,6 +61,21 @@ func SetupInitialProfiles() map[string]Profile {
 		ok = res=="y"
 	}
 
-
 	return profiles
 }
+
+func LoadExistingConfig() map[string]Profile {
+	list := ReadExistingConfigIntoMapFromYaml(fmt.Sprintf("%s/.termsesh/config", os.Getenv("HOME")))
+	return list
+}
+
+func LoadProfile(c string) (Profile, error) {
+	existingProfiles := LoadExistingConfig()
+
+	profile, isPresent := existingProfiles[c]
+	if !isPresent {
+		return Profile{}, errors.New("No profile found with that name")
+	}
+	return profile, nil
+}
+
