@@ -2,10 +2,10 @@ package config
 
 import (
 	"bytes"
-	"fmt"
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"os"
+	"terminal-session-manager/src/internal/properties"
 	"testing"
 )
 
@@ -39,9 +39,11 @@ func TestAddNewProfileToExistingConfig(t *testing.T) {
 
 
 func TestConfigFileIsCreatedFromTemplateWhenItDoesNotExist(t *testing.T) {
-	projectPath := setupProject()
-	configFilePath := projectPath + "/config"
+	setupProject()
+	projectPath := properties.ApplicationConfig.DefaultConfigurationDir
+	configFilePath := properties.ApplicationConfig.DefaultConfigurationPath
 	templateContent := bytes.NewBufferString("some content").Bytes()
+	os.Mkdir(projectPath, os.ModePerm)
 	err := GenerateConfigFile(configFilePath, func() []byte { return templateContent }, nil)
 	generatedFile, _ := ioutil.ReadFile(configFilePath)
 
@@ -52,8 +54,7 @@ func TestConfigFileIsCreatedFromTemplateWhenItDoesNotExist(t *testing.T) {
 	t.Cleanup(func() { os.RemoveAll(projectPath) })
 }
 
-func setupProject() string {
-	projectPath := fmt.Sprint(os.TempDir(), "/test")
-	os.MkdirAll(projectPath, os.ModePerm)
-	return projectPath
+func setupProject()  {
+	os.Setenv("TERMSESH_ENV", "TEST")
+	properties.SetupApplicationProperties()
 }

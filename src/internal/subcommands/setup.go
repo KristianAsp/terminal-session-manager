@@ -7,6 +7,7 @@ import (
 	"os"
 	"terminal-session-manager/src/internal/config"
 	"terminal-session-manager/src/internal/helpers"
+	"terminal-session-manager/src/internal/properties"
 	"terminal-session-manager/src/internal/resources"
 	"time"
 )
@@ -33,7 +34,7 @@ func setupSubcommandUsage() string {
 
 func setupTermseshForUse() error {
 	repositoryFileName := "config"
-	repositoryDirName := fmt.Sprintf("%s/.termsesh", os.Getenv("HOME"))
+	repositoryDirName := fmt.Sprintf(properties.ApplicationConfig.DefaultConfigurationDir)
 	localRepositoryPath := fmt.Sprintf("%s/%s", repositoryDirName, repositoryFileName)
 
 	if err := backupExistingConfigIfExists(repositoryDirName, func() string { return time.Now().Format("02012006151605")}); err != nil {

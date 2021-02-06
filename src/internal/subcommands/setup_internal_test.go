@@ -4,12 +4,14 @@ import (
 	"fmt"
 	"github.com/stretchr/testify/assert"
 	"os"
+	"terminal-session-manager/src/internal/properties"
 	"testing"
 )
 
 func TestGenerateRepositoryConfigFile(t *testing.T) {
-	repositoryDirPath := fmt.Sprintf("%s/.termsesh", os.TempDir())
-	repositoryFilePath := fmt.Sprintf("%s/%s", repositoryDirPath, "config")
+	setupProject()
+	repositoryDirPath := properties.ApplicationConfig.DefaultConfigurationDir
+	repositoryFilePath := properties.ApplicationConfig.DefaultConfigurationPath
 
 	assert.NoError(t, os.MkdirAll(repositoryDirPath, os.ModePerm))
 	assert.NoError(t, initLocalRepositoryFileGivenPath(repositoryFilePath))
@@ -21,7 +23,8 @@ func TestGenerateRepositoryConfigFile(t *testing.T) {
 }
 
 func TestGenerateEmptyRepositoryDir(t *testing.T) {
-	repositoryDirPath := fmt.Sprintf("%s/.termsesh", os.TempDir())
+	setupProject()
+	repositoryDirPath := properties.ApplicationConfig.DefaultConfigurationDir
 
 	assert.NoError(t, ensureRepositoryDirExists(repositoryDirPath))
 
@@ -29,7 +32,8 @@ func TestGenerateEmptyRepositoryDir(t *testing.T) {
 }
 
 func TestBackupExistingConfigDir(t *testing.T) {
-	repositoryDirPath := fmt.Sprintf("%s/.termsesh", os.TempDir())
+	setupProject()
+	repositoryDirPath := properties.ApplicationConfig.DefaultConfigurationDir
 	backupSuffix := func() string { return "test"}
 	backupDirPath := fmt.Sprintf("%s-%s", repositoryDirPath, backupSuffix())
 
@@ -44,3 +48,7 @@ func TestBackupExistingConfigDir(t *testing.T) {
 	})
 }
 
+func setupProject() {
+	os.Setenv("TERMSESH_ENV", "TEST")
+	properties.SetupApplicationProperties()
+}

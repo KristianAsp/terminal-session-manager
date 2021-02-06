@@ -3,19 +3,19 @@ package properties
 import (
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/gcfg.v1"
-	"io/ioutil"
 	"os"
 	"regexp"
 	"strings"
+	"terminal-session-manager/src/internal/resources"
 )
 
-var Application AppConfig
+var ApplicationConfig AppConfig
 
 func SetupApplicationProperties() error {
 	cfg, err := LoadApplicationConfiguration()
 	if err != nil { log.Fatal(err) }
 
-	Application = cfg.AppConfig
+	ApplicationConfig = cfg.AppConfig
 	return nil
 
 }
@@ -23,21 +23,21 @@ func SetupApplicationProperties() error {
 func LoadApplicationConfiguration() (configFile, error) {
 	// Load properties file based on presence of TERMSESH_ENV environment variable
 	// If in a test environment, load the test properties.
-	var cfgFile string
+	var cfgFileEnv string
 	if os.Getenv("TERMSESH_ENV") == "TEST" {
-		cfgFile = "properties/test.properties"
+		cfgFileEnv = "test"
 	} else {
-		cfgFile = "properties/prod.properties"
+		cfgFileEnv = "prod"
 	}
 
 	var err error
 	var config configFile
 
-	bytes, _ := ioutil.ReadFile(cfgFile)
+	bytes := resources.ReadPropertiesFile(cfgFileEnv)
 
 	s := string(bytes)
 
-	r := regexp.MustCompile(`\$\{(?P<var>[a-zA-Z0-9]+)\}`)
+	r := regexp.MustCompile(`\$\{([a-zA-Z0-9]+)\}`)
 	match := r.FindAllStringSubmatch(s, -1)
 
 	result := make(map[string]string)
@@ -61,6 +61,7 @@ func LoadApplicationConfiguration() (configFile, error) {
 type AppConfig struct {
 	ApplicationName  			string
 	DefaultConfigurationPath  	string
+	DefaultConfigurationDir 	string
 	Debug						bool
 }
 
