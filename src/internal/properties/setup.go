@@ -17,7 +17,6 @@ func SetupApplicationProperties() error {
 
 	ApplicationConfig = cfg.AppConfig
 	return nil
-
 }
 
 func LoadApplicationConfiguration() (configFile, error) {
@@ -30,13 +29,20 @@ func LoadApplicationConfiguration() (configFile, error) {
 		cfgFileEnv = "prod"
 	}
 
+	config, err := readPropertiesFile(resources.ReadPropertiesFile, cfgFileEnv)
+	if err != nil {
+		return config, err
+	}
+
+	return config, nil
+}
+
+func readPropertiesFile(propertyProvider func(input string) []byte, cfgFileEnv string) (configFile, error) {
 	var err error
 	var config configFile
 
-	bytes := resources.ReadPropertiesFile(cfgFileEnv)
-
+	bytes := propertyProvider(cfgFileEnv)
 	s := string(bytes)
-
 	r := regexp.MustCompile(`\$\{([a-zA-Z0-9]+)\}`)
 	match := r.FindAllStringSubmatch(s, -1)
 
@@ -45,17 +51,20 @@ func LoadApplicationConfiguration() (configFile, error) {
 		result[match[i][1]] = match[i][0]
 	}
 
-	for key, value := range result {
-		s = strings.ReplaceAll(s, value, os.Getenv(key))
-	}
-
+	s = replaceEnvVariablesWithValues(result, s)
 	err = gcfg.ReadStringInto(&config, s)
-
 	if err != nil {
 		return config, err
 	}
 
 	return config, nil
+}
+
+func replaceEnvVariablesWithValues(result map[string]string, s string) string {
+	for key, value := range result {
+		s = strings.ReplaceAll(s, value, os.Getenv(key))
+	}
+	return s
 }
 
 type AppConfig struct {
