@@ -2,6 +2,7 @@ package subcommands
 
 import (
 	"github.com/urfave/cli/v2"
+	"os"
 	"terminal-session-manager/src/internal/config"
 	"terminal-session-manager/src/internal/helpers"
 	"terminal-session-manager/src/internal/properties"
@@ -28,7 +29,7 @@ func addSubcommandAction() cli.ActionFunc {
 	return func(c *cli.Context) error {
 		list := config.ReadExistingConfigIntoMapFromYaml(properties.ApplicationConfig.DefaultConfigurationPath)
 		list = config.AddProfileToConfigMap(list, helpers.TakeInputFromUser)
-		config.GenerateConfigFile(properties.ApplicationConfig.DefaultConfigurationPath, resources.ReadConfigTmpl, list)
+		config.GenerateConfigFile(properties.ApplicationConfig.DefaultConfigurationPath, resources.ReadConfigTmpl, list, []int{os.O_RDWR|os.O_CREATE|os.O_TRUNC})
 		return nil
 	}
 }

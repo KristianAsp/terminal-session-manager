@@ -13,8 +13,8 @@ import (
 )
 
 type Profile struct {
-	ProfileName string `yaml:"profileName"`
-	GitConfigLocation string `yaml:"gitConfigLocation"`
+	ProfileName string `yaml:"ProfileName"`
+	GIT_CONFIG string `yaml:"GIT_CONFIG"`
 }
 
 func ReadExistingConfigIntoMapFromYaml(configPath string) map[string]Profile {
@@ -39,18 +39,22 @@ func AddProfileToConfigMap(configMap map[string]Profile, inputProvider func(inpu
 	profile_name := inputProvider("Profile name: ")
 	configMap[profile_name] = Profile{
 		ProfileName: profile_name,
-		GitConfigLocation: inputProvider("Git Config Location (or leave blank to omit): "),
+		GIT_CONFIG: inputProvider("Git Config Location (or leave blank to omit): "),
 	}
 
 	return configMap
 }
 
-func GenerateConfigFile(configPath string, templateProvider func() []byte, profiles map[string]Profile) error {
+func GenerateConfigFile(configPath string, templateProvider func() []byte, profiles map[string]Profile, writeFlags []int) error {
+	if writeFlags == nil {
+		writeFlags = []int{os.O_CREATE, os.O_APPEND, os.O_WRONLY}
+	}
+
 	log.Debug(fmt.Sprintf("Generating config from template based on user-input"))
 	t, _ := template.New("config").Parse(string(templateProvider()))
 	var tmpl bytes.Buffer
 	_ = t.Execute(&tmpl, profiles)
-	return helpers.WriteToFile(configPath, tmpl.Bytes(), []int{os.O_CREATE, os.O_APPEND, os.O_WRONLY})
+	return helpers.WriteToFile(configPath, tmpl.Bytes(), writeFlags)
 }
 
 func SetupInitialProfiles() map[string]Profile {

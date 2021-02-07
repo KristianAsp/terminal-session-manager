@@ -49,7 +49,7 @@ func setupTermseshForUse() error {
 		return err
 	}
 
-	return config.GenerateConfigFile(localRepositoryPath, resources.ReadConfigTmpl, config.SetupInitialProfiles())
+	return config.GenerateConfigFile(localRepositoryPath, resources.ReadConfigTmpl, config.SetupInitialProfiles(), nil)
 }
 
 

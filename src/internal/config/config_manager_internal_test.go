@@ -13,7 +13,7 @@ func TestAddNewProfileToEmptyConfig(t *testing.T) {
 	configMap := make(map[string]Profile)
 	profile := Profile{
 		ProfileName: "Test",
-		GitConfigLocation: "Test",
+		GIT_CONFIG: "Test",
 	}
 
 	result := AddProfileToConfigMap(configMap, func(input string) string { return "Test" })
@@ -24,12 +24,12 @@ func TestAddNewProfileToExistingConfig(t *testing.T) {
 	configMap := make(map[string]Profile)
 	configMap["Test2"] = Profile{
 		ProfileName: "Test2",
-		GitConfigLocation: "Test2",
+		GIT_CONFIG: "Test2",
 	}
 
 	expectedProfileValues := Profile{
 		ProfileName: "Test",
-		GitConfigLocation: "Test",
+		GIT_CONFIG: "Test",
 	}
 
 	result := AddProfileToConfigMap(configMap, func(input string) string { return "Test" })
@@ -44,7 +44,7 @@ func TestConfigFileIsCreatedFromTemplateWhenItDoesNotExist(t *testing.T) {
 	configFilePath := properties.ApplicationConfig.DefaultConfigurationPath
 	templateContent := bytes.NewBufferString("some content").Bytes()
 	os.Mkdir(projectPath, os.ModePerm)
-	err := GenerateConfigFile(configFilePath, func() []byte { return templateContent }, nil)
+	err := GenerateConfigFile(configFilePath, func() []byte { return templateContent }, nil, nil)
 	generatedFile, _ := ioutil.ReadFile(configFilePath)
 
 	assert.Nil(t, err)
